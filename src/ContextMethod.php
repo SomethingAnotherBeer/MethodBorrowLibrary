@@ -23,19 +23,25 @@ class ContextMethod
     }
 
 
-    public function __invoke(...$args): mixed
+    public function __invoke(mixed ...$args): mixed
     {
-       return $this->rMethod->invoke($this->contextObject, ...$args);
+       $current_args = [];
+
+       if (count($this->binded_args) > 0) {
+            $current_args = array_merge($this->binded_args, [...$args]);
+       }
+
+       return $this->rMethod->invoke($this->contextObject, ...$current_args);
     }
 
-    public function bindOne(mixed $value): static
+    public function bind(mixed $value): static
     {
         $this->binded_args[] = $value;
 
         return $this;
     }
 
-    public function bind(array $args): static
+    public function bindArgs(array $args): static
     {
         foreach ($args as $arg) {
             $this->binded_args[] = $arg;
