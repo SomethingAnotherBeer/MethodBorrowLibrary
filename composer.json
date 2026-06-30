@@ -1,6 +1,7 @@
 {
     "name": "somethinganotherbeer/methodborrow",
     "type": "library",
+    "license": "GPL-3.0-or-later",
     "autoload": {
         "psr-4": {
             "Somethinganotherbeer\\Methodborrow\\": "src/"
