@@ -6,10 +6,17 @@
             "Somethinganotherbeer\\Methodborrow\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Somethinganotherbeer\\Tests": "tests/"
+        }
+    },
     "authors": [
         {
             "name": "Eugene Zarianski"
         }
     ],
-    "require": {}
+    "require-dev": {
+        "phpunit/phpunit": "^10.5"
+    }
 }
