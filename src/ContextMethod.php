@@ -25,13 +25,12 @@ class ContextMethod
 
     public function __invoke(mixed ...$args): mixed
     {
-       $current_args = [];
 
        if (count($this->binded_args) > 0) {
-            $current_args = array_merge($this->binded_args, [...$args]);
+            $args = array_merge($this->binded_args, [...$args]);
        }
 
-       return $this->rMethod->invoke($this->contextObject, ...$current_args);
+       return $this->rMethod->invoke($this->contextObject, ...$args);
     }
 
     public function bind(mixed $value): static
