@@ -1,0 +1,15 @@
+{
+    "name": "somethinganotherbeer/methodborrow",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "Somethinganotherbeer\\Methodborrow\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Eugene Zarianski"
+        }
+    ],
+    "require": {}
+}
