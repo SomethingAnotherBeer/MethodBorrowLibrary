@@ -23,7 +23,7 @@ class ContextMethod
     }
 
 
-    public function __invoke(array $args): mixed
+    public function __invoke(...$args): mixed
     {
        return $this->rMethod->invoke($this->contextObject, ...$args);
     }

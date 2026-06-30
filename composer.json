@@ -8,7 +8,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Somethinganotherbeer\\Tests": "tests/"
+            "Somethinganotherbeer\\Tests\\": "tests/"
         }
     },
     "authors": [

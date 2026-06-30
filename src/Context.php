@@ -8,9 +8,9 @@ use ReflectionParameter;
 use Somethinganotherbeer\Methodborrow\Conf\ClassConfList;
 use Somethinganotherbeer\Methodborrow\Exception\BuiltInParameterValueNotSpecifiedException;
 use Somethinganotherbeer\Methodborrow\Exception\ClassNotFoundException;
+use Somethinganotherbeer\Methodborrow\Exception\ImplementationNotImplementsSpecifiedClassException;
 use Somethinganotherbeer\Methodborrow\Exception\ImplementationNotSpecifiedException;
 use Somethinganotherbeer\Methodborrow\Exception\MethodNotFoundException;
-
 class Context
 {
     private ClassConfList $classConfList;
@@ -18,16 +18,20 @@ class Context
     /** @var Object[] $object_storage */
     private array $object_storage = [];
 
+
+    public static function makeInstance(ClassConfList $classConfList): Context
+    {
+        return new Context($classConfList);
+    }
+
     public function __construct(ClassConfList $classConfList)
     {
         $this->classConfList = $classConfList;
     }
 
-
-
-
-    public function borrowMethodFromClass(string $classname, string $method_name)
+    public function borrowMethodFromClass(string $classname, string $method_name): ContextMethod
     {
+
         if (!class_exists($classname)) {
             throw new ClassNotFoundException("Класс не найден");
         }
@@ -86,7 +90,7 @@ class Context
                         $current = $classConf->getReplacementConfList()->get($item->getName());
                         $args[$item->getPosition()] = $current->getValue();
                     }
-                    }
+                }
                 if (count($unexpected_built_in_params_list) > 0) {
                     $unexpected_built_in_params_list_str = implode("\n", $unexpected_built_in_params_list);
                     throw new BuiltInParameterValueNotSpecifiedException("Следующие параметры со встроенным типом не имеют дефолтных значений в конфигурации: $unexpected_built_in_params_list_str");
@@ -103,24 +107,34 @@ class Context
 
             if (count($class_parameter_list) > 0) {
                 foreach ($class_parameter_list as $item) {
-                    $currentRClass = new ReflectionClass($item->getName());
+                    $currentRClass = new ReflectionClass($item->getType()->getName());
                     if ($currentRClass->isAbstract() || $currentRClass->isInterface()) {
-                        if (!$classConf || $classConf->getImplementationConfList()->get($item->getName())) {
-                            throw new ImplementationNotSpecifiedException("В конфигурации не указана реализация для абстрактного класса/интерфейса с именем " . $item->getName());
+                        if (!$classConf || !$classConf->getImplementationConfList()->get($item->getType()->getName())) {
+                            throw new ImplementationNotSpecifiedException("В конфигурации не указана реализация для абстрактного класса/интерфейса с именем " . $item->getType()->getName());
                         }
-                        else {
-                            $currentRClass = new ReflectionClass($classConf->getImplementationConfList()->get($item->getName()));
+                        $implementation = new ReflectionClass($classConf->getImplementationConfList()->get($item->getType()->getName())->getValue());
+
+                        if (!$implementation->isSubclassOf($currentRClass)) {
+                            throw new ImplementationNotImplementsSpecifiedClassException("Указанный в конфигурации класс с именем ". $implementation->getName(). " не реализует абстрактный класс/интерфейс с именем ". $currentRClass->getName());
                         }
+                        $currentRClass = $implementation;
                     }
+                    
                     $args[$item->getPosition()] = $this->createObject($currentRClass);
                 }
             }
 
-            sort($args);
+            $sorted_args = [];
+            for ($i = 0; $i < count($args); $i++) {
+                $sorted_args[$i] = $args[$i];
+            }
 
-            return $rClass->newInstance(...$args);
+            return $rClass->newInstance(...$sorted_args);
 
 
+        }
+        else {
+            return $rClass->newInstance();
         }
 
     }
@@ -161,13 +175,5 @@ class Context
     {
         return array_filter($r_parameter_list, fn(ReflectionParameter $rParameter) => !$rParameter->getType()->isBuiltin() && !$rParameter->isDefaultValueAvailable());
     }
-
-
-    private function checkParameterIsInterface(ReflectionParameter $rParameter)
-    {
-        
-    }
-
-
 
 }
