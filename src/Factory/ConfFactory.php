@@ -48,6 +48,8 @@ class ConfFactory
 
     public function makeClassConfList(array $params_list): ClassConfList
     {   
+        $this->confParamsChecker->checkConf($params_list);
+
         /** @var ClassConf[] $class_conf_list */
         $class_conf_list = [];
 
